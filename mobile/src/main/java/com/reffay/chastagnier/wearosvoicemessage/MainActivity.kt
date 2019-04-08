@@ -1,29 +1,37 @@
 package com.reffay.chastagnier.wearosvoicemessage
 
+import android.app.Activity
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.speech.RecognizerIntent
 import android.util.Log
-import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import com.google.android.gms.wearable.*
 
-class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener, View.OnClickListener {
+class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
 
     private var datapath = "/data_path"
     private lateinit var sendButton: Button
+    private lateinit var voiceButton: Button
     private lateinit var logger: TextView
+    private var message: String = ""
 
     companion object {
         private const val TAG = "Mobile MainActivity"
+        private const val SPEECH_REQUEST_CODE = 0
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         sendButton = findViewById(R.id.sendbtn)
-        sendButton.setOnClickListener(this)
+        sendButton.setOnClickListener { sendData(message) }
         logger = findViewById(R.id.logger)
+
+        voiceButton = findViewById(R.id.voiceButton)
+        voiceButton.setOnClickListener { displaySpeechRecognizer() }
     }
 
     // add data listener
@@ -42,12 +50,6 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener, View
         if (newInfo.compareTo("") != 0) {
             logger.append("\n" + newInfo)
         }
-    }
-
-    //button listener
-    override fun onClick(v: View) {
-        val message = "Hello wearable"
-        sendData(message)
     }
 
     override fun onDataChanged(dataEventBuffer: DataEventBuffer) {
@@ -70,6 +72,24 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener, View
             }
         }
     }
+
+    /* Voice Region */
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == SPEECH_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            val results = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            val spokenText = results?.get(0)
+            logger.text = spokenText
+            message = spokenText.toString()
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    private fun displaySpeechRecognizer() {
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+        startActivityForResult(intent, SPEECH_REQUEST_CODE)
+    }
+    /* End Region */
 
     private fun sendData(message: String) {
         val dataMap = PutDataMapRequest.create(datapath)
