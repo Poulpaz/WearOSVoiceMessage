@@ -1,32 +1,24 @@
 package com.reffay.chastagnier.wearosvoicemessage
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.util.Log
-import android.widget.Button
-import android.widget.TextView
 import com.google.android.gms.wearable.*
 import kotlinx.android.synthetic.main.activity_main.*
-import android.support.v4.content.ContextCompat.startActivity
 import android.content.ActivityNotFoundException
-import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Environment
 import android.widget.Toast
-import android.os.Environment.getExternalStorageDirectory
 import com.squareup.picasso.Picasso
 import java.io.File
 import java.io.File.separator
 import android.provider.MediaStore
-
-
-
-
-
-
+import android.support.v4.app.ActivityCompat
 
 
 class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
@@ -37,6 +29,7 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
     companion object {
         private const val TAG = "Mobile MainActivity"
         private const val SPEECH_REQUEST_CODE = 0
+        const val REQUEST_PERMISSION_STORAGE = 1001
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,6 +40,8 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         imageView.setOnClickListener {
             imageView.setImageDrawable(null)
         }
+
+        requestStoragePermission()
     }
 
     // add data listener
@@ -146,6 +141,43 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         startActivityForResult(intent, SPEECH_REQUEST_CODE)
     }
     /* End Region */
+
+    fun requestStoragePermission(): Boolean {
+        return requestPermission(Manifest.permission.READ_EXTERNAL_STORAGE, REQUEST_PERMISSION_STORAGE, this)
+    }
+
+    private fun requestPermission(permission: String, code: Int, activity: Activity): Boolean {
+        return requestPermissions(arrayOf(permission), code, activity)
+    }
+
+    private fun requestPermissions(permissions: Array<String>, code: Int, activity: Activity): Boolean {
+        return if (!checkPermissions(permissions)) {
+            ActivityCompat.requestPermissions(activity, permissions, code)
+            false
+        } else {
+            true
+        }
+    }
+
+
+    private fun checkPermissions(permissions: Array<out String>): Boolean {
+        var permissionGranted = false
+        for (permission in permissions) {
+            if (ActivityCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
+                permissionGranted = true
+            }
+        }
+        return permissionGranted
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_PERMISSION_STORAGE && grantResults[permissions.indexOf(Manifest.permission.READ_EXTERNAL_STORAGE)] == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Vous pouvez utiliser l'application", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Vous avez refusez la permission, l'application n'affichera pas d'images", Toast.LENGTH_LONG).show()
+        }
+    }
 
     private fun sendData(message: String) {
         val dataMap = PutDataMapRequest.create(datapath)
