@@ -3,6 +3,7 @@
           xmlns:tools="http://schemas.android.com/tools" package="com.reffay.chastagnier.wearosvoicemessage">
 
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
             android:allowBackup="true"

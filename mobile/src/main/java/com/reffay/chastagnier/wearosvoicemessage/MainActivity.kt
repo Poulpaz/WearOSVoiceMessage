@@ -9,13 +9,29 @@ import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import com.google.android.gms.wearable.*
+import kotlinx.android.synthetic.main.activity_main.*
+import android.support.v4.content.ContextCompat.startActivity
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.net.Uri
+import android.os.Environment
+import android.widget.Toast
+import android.os.Environment.getExternalStorageDirectory
+import com.squareup.picasso.Picasso
+import java.io.File
+import java.io.File.separator
+import android.provider.MediaStore
+
+
+
+
+
+
+
 
 class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
 
     private var datapath = "/data_path"
-    private lateinit var sendButton: Button
-    private lateinit var voiceButton: Button
-    private lateinit var logger: TextView
     private var message: String = ""
 
     companion object {
@@ -26,12 +42,11 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        sendButton = findViewById(R.id.sendbtn)
-        sendButton.setOnClickListener { sendData(message) }
-        logger = findViewById(R.id.logger)
-
-        voiceButton = findViewById(R.id.voiceButton)
-        voiceButton.setOnClickListener { displaySpeechRecognizer() }
+        sendbtn.setOnClickListener { sendData(message) }
+        button_microphone.setOnClickListener { displaySpeechRecognizer() }
+        imageView.setOnClickListener {
+            imageView.setImageDrawable(null)
+        }
     }
 
     // add data listener
@@ -62,6 +77,15 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
                     val message = dataMapItem.dataMap.getString("message")
                     Log.v(TAG, "Wear activity received message: $message")
                     logThis(message)
+                    if(message?.toLowerCase().equals("ouvrir youtube")){
+                        watchYoutubeVideo()
+                    } else if(message?.toLowerCase().equals("ouvrir message")){
+                        watchMessage()
+                    } else if (message?.toLowerCase().equals("ouvrir musique")){
+                        playMusic()
+                    } else {
+                        displayPicture(message.toLowerCase())
+                    }
                 } else {
                     Log.e(TAG, "Unrecognized path: " + path!!)
                 }
@@ -78,10 +102,42 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         if (requestCode == SPEECH_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             val results = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
             val spokenText = results?.get(0)
-            logger.text = spokenText
             message = spokenText.toString()
+            textview_message.setText(message)
         }
         super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    fun displayPicture(word : String){
+        val externalStorage = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).absolutePath
+        val outputFile = File(externalStorage + separator + "Watch" + separator + word + ".png")
+        if(outputFile.exists()) {
+            Picasso.get().load(outputFile).into(imageView)
+        }
+    }
+
+    fun watchYoutubeVideo() {
+        val appIntent = Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube"))
+        val webIntent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("https://www.youtube.com/")
+        )
+        try {
+            this.startActivity(appIntent)
+        } catch (ex: ActivityNotFoundException) {
+            this.startActivity(webIntent)
+        }
+    }
+
+    fun playMusic(){
+        val intent = Intent(MediaStore.INTENT_ACTION_MUSIC_PLAYER)
+        startActivity(intent)
+    }
+
+    fun watchMessage(){
+        val sendIntent = Intent(Intent.ACTION_VIEW)
+        sendIntent.data = Uri.parse("sms:")
+        startActivity(sendIntent);
     }
 
     private fun displaySpeechRecognizer() {
@@ -98,7 +154,11 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         request.setUrgent()
         val dataItemTask = Wearable.getDataClient(this).putDataItem(request)
         dataItemTask
-            .addOnSuccessListener { dataItem -> Log.d(TAG, "Sending message was successful: $dataItem") }
-            .addOnFailureListener { e -> Log.e(TAG, "Sending message failed: $e") }
+            .addOnSuccessListener { dataItem ->
+                Toast.makeText(this, "Message envoyé : $message", Toast.LENGTH_LONG).show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Erreur lors de l'envoi du message", Toast.LENGTH_SHORT).show()
+            }
     }
 }
