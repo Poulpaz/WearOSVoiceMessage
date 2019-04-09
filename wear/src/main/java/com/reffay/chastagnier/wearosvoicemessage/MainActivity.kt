@@ -3,14 +3,19 @@ package com.reffay.chastagnier.wearosvoicemessage
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.os.Environment
 import android.speech.RecognizerIntent
 import android.support.wearable.activity.WearableActivity
 import android.util.Log
+import android.util.Rational
 import android.widget.Button
 import android.widget.TextView
 import com.google.android.gms.wearable.*
+import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.activity_main.*
+import java.io.File
 
-    class MainActivity : WearableActivity(), DataClient.OnDataChangedListener {
+class MainActivity : WearableActivity(), DataClient.OnDataChangedListener {
         private var mTextView: TextView? = null
         private lateinit var messageButton: Button
         private lateinit var voiceButton: Button
@@ -39,6 +44,10 @@ import com.google.android.gms.wearable.*
             }
 
             setAmbientEnabled()
+
+            iv_displayer.setOnClickListener {
+                iv_displayer.setImageDrawable(null)
+            }
         }
 
         //add listener.
@@ -63,7 +72,16 @@ import com.google.android.gms.wearable.*
                         val dataMapItem = DataMapItem.fromDataItem(event.dataItem)
                         val message = dataMapItem.dataMap.getString("message")
                         Log.v(TAG, "Wear activity received message: $message")
-                        mTextView!!.text = message
+                        val media = File(
+                            Environment.getExternalStorageDirectory().absolutePath + "/Pictures/",
+                            "$message.png"
+                        )
+                        if(media.exists()) {
+                            Picasso.get().load(media).resize(200, 200).centerCrop().into(iv_displayer)
+                            mTextView!!.text = ""
+                        } else {
+                            mTextView!!.text = message
+                        }
                     } else { Log.e(TAG, "Unrecognized path: " + path!!) }
                 } else if (event.type == DataEvent.TYPE_DELETED) { Log.v(TAG, "Data deleted : " + event.dataItem.toString()) }
                 else { Log.e(TAG, "Unknown data event Type = " + event.type) }

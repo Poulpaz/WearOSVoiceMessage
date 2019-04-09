@@ -8,29 +8,34 @@
         android:padding="@dimen/box_inset_layout_padding"
         tools:deviceIds="wear">
 
-    <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="@dimen/inner_frame_layout_padding"
-            android:orientation="vertical">
+        <ScrollView android:layout_width="match_parent" android:layout_height="match_parent">
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/inner_frame_layout_padding"
+                    android:orientation="vertical">
 
-        <Button
-                android:id="@+id/wrbutton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/send_message"/>
+            <ImageView android:id="@+id/iv_displayer"
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:scaleType="centerInside"/>
+            <Button
+                    android:id="@+id/wrbutton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/send_message"/>
 
-        <Button
-                android:id="@+id/voiceButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/record_voice"/>
+            <Button
+                    android:id="@+id/voiceButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/record_voice"/>
 
-        <TextView
-                android:id="@+id/text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/messages_sent"/>
-
-    </LinearLayout>
+            <TextView
+                    android:id="@+id/text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/messages_sent"/>
+            </LinearLayout>
+        </ScrollView>
 </android.support.wear.widget.BoxInsetLayout>
