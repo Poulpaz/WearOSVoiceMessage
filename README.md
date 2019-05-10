@@ -34,3 +34,8 @@ Vous pouvez ajouter des images dans les dossiers suivants :<br />
 Stockage interne du téléphone puis `/Documents/Watch`<br />
 Stockage interne de la montre puis `/Pictures`<br />
 Bien penser à renommer les images comme "courgette.png". Après cette étape, on pourra dire "courgette" et on enverra une courgette.
+
+## Vidéo
+https://app.box.com/s/1owagpjldz8v05ffp2rowu5y7u0od4a1
+
+
